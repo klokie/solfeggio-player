@@ -1,3 +1,7 @@
+// src/components/AudioContextProvider.tsx
+
+/** @use client */
+
 import React, { createContext, useContext, useRef } from "react";
 
 interface IAudioContext {
