@@ -1,6 +1,4 @@
-// src/components/AudioContextProvider.tsx
-
-/** @use client */
+"use client";
 
 import React, { createContext, useContext, useRef } from "react";
 
@@ -12,10 +10,12 @@ const AudioContextState = createContext<IAudioContext>({ audioContext: null });
 
 export const useAudioContext = () => useContext(AudioContextState);
 
-const AudioContextProvider: React.FC = ({ children }) => {
+const AudioContextProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const audioRef = useRef<AudioContext | null>(null);
 
-  if (!audioRef.current) {
+  if (!audioRef.current && typeof window !== "undefined") {
     audioRef.current = new AudioContext();
   }
 
