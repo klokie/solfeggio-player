@@ -4,16 +4,19 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import ShaderBackground from "./ShaderBackground";
 
 const FREQUENCIES = [
+  { freq: 174, name: "Pain Relief & Foundation" },
+  { freq: 285, name: "Healing Tissue & Safety" },
   { freq: 396, name: "Liberating Guilt & Fear" },
   { freq: 417, name: "Facilitating Change" },
   { freq: 528, name: "Transformation & Miracles" },
   { freq: 639, name: "Connection & Relationships" },
   { freq: 741, name: "Awakening Intuition" },
   { freq: 852, name: "Returning to Spiritual Order" },
+  { freq: 963, name: "Divine Consciousness" },
 ];
 
 const WAVEFORMS: OscillatorType[] = ["sine", "triangle", "sawtooth", "square"];
-const WAVEFORM_LABELS: Record<OscillatorType, string> = {
+const WAVEFORM_LABELS: Record<string, string> = {
   sine: "Sine",
   triangle: "Triangle",
   sawtooth: "Saw",
@@ -37,8 +40,9 @@ const SolfeggioPlayer = () => {
 
   const [octave, setOctave] = useState(0);
   const [waveform, setWaveform] = useState<OscillatorType>("sine");
-  const [bg, setBg] = useState(0);
+  const [bg, setBg] = useState(1);
   const [playing, setPlaying] = useState<Set<number>>(new Set());
+  const [infoSlide, setInfoSlide] = useState(0);
 
   const getCtx = useCallback(() => {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
@@ -133,6 +137,14 @@ const SolfeggioPlayer = () => {
     };
   }, []);
 
+  useEffect(() => {
+    try {
+      ((window as unknown as Record<string, unknown[]>).adsbygoogle ||= []).push({});
+    } catch {
+      // AdSense not loaded
+    }
+  }, []);
+
   const displayFreq = (base: number) => Math.round(base * 2 ** octave);
 
   return (
@@ -187,7 +199,7 @@ const SolfeggioPlayer = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
             {FREQUENCIES.map(({ freq, name }) => {
               const active = playing.has(freq);
               return (
@@ -226,7 +238,7 @@ const SolfeggioPlayer = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="w-16">
+            <div className="w-20">
               {playing.size > 0 && (
                 <button
                   onClick={stopAll}
@@ -250,7 +262,72 @@ const SolfeggioPlayer = () => {
                 />
               ))}
             </div>
-            <div className="w-16" />
+            <div className="w-20 flex justify-end">
+              <a
+                href="https://ko-fi.com/klokie"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-white/30 hover:text-white/60 transition-colors"
+              >
+                Support ♥
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <ins
+            className="adsbygoogle"
+            style={{ display: "block", width: "100%", maxWidth: 468, height: 60 }}
+            data-ad-client="ca-pub-REPLACE_WITH_YOUR_PUBLISHER_ID"
+            data-ad-slot="REPLACE_WITH_YOUR_AD_SLOT"
+            data-ad-format="horizontal"
+            data-full-width-responsive="false"
+          />
+        </div>
+
+        <div className="mt-6 max-w-md mx-auto text-center text-white/30 text-xs leading-relaxed px-4">
+          {[
+            <p key={0}>
+              The Solfeggio frequencies are a set of tones rooted in a medieval
+              hymn to John the Baptist, rediscovered in the 1970s by Joseph
+              Puleo. Each frequency is associated with specific healing or
+              meditative properties.
+            </p>,
+            <p key={1}>
+              The lower tones (174–285 Hz) are linked to physical healing and
+              pain relief. The middle range (396–639 Hz) addresses emotional
+              balance — releasing fear, facilitating change, and strengthening
+              relationships. The highest tones (741–963 Hz) are said to awaken
+              intuition and connect to higher consciousness.
+            </p>,
+            <p key={2}>
+              Scientific evidence for these claims remains limited, but the
+              frequencies are widely used in meditation, yoga, and sound
+              therapy practices around the world.{" "}
+              <a
+                href="https://en.wikipedia.org/wiki/Solfeggio_frequencies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-white/20 hover:text-white/50 transition-colors"
+              >
+                Learn more on Wikipedia →
+              </a>
+            </p>,
+          ][infoSlide]}
+          <div className="flex items-center justify-center gap-3 mt-4">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                onClick={() => setInfoSlide(i)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  infoSlide === i
+                    ? "bg-white/70 scale-150"
+                    : "bg-white/20 hover:bg-white/40"
+                }`}
+                aria-label={`Info ${i + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>
