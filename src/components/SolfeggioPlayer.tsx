@@ -28,11 +28,40 @@ const OCTAVE_SHIFTS = [-2, -1, 0, 1, 2];
 type ActiveTone = {
   oscillator: OscillatorNode;
   gain: GainNode;
+  lfo: OscillatorNode | null;
+  lfoGain: GainNode | null;
 };
 
 const FADE_MS = 80;
 const CLEANUP_MS = 120;
 const TONE_GAIN = 0.15;
+const LFO_RATE = 0.12;
+const LFO_DEPTH = 0.06;
+
+const attachLfo = (ctx: AudioContext, tone: ActiveTone) => {
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.type = "sine";
+  lfo.frequency.value = LFO_RATE;
+  lfoGain.gain.value = LFO_DEPTH;
+  lfo.connect(lfoGain);
+  lfoGain.connect(tone.gain.gain);
+  lfo.start();
+  tone.lfo = lfo;
+  tone.lfoGain = lfoGain;
+};
+
+const detachLfo = (tone: ActiveTone) => {
+  if (tone.lfo) {
+    tone.lfo.stop();
+    tone.lfo.disconnect();
+    tone.lfo = null;
+  }
+  if (tone.lfoGain) {
+    tone.lfoGain.disconnect();
+    tone.lfoGain = null;
+  }
+};
 
 const SolfeggioPlayer = () => {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -42,6 +71,7 @@ const SolfeggioPlayer = () => {
   const [waveform, setWaveform] = useState<OscillatorType>("sine");
   const [bg, setBg] = useState(1);
   const [playing, setPlaying] = useState<Set<number>>(new Set());
+  const [pulse, setPulse] = useState(true);
   const [infoSlide, setInfoSlide] = useState(0);
 
   const getCtx = useCallback(() => {
@@ -56,6 +86,7 @@ const SolfeggioPlayer = () => {
 
       if (tones.has(baseFreq)) {
         const t = tones.get(baseFreq)!;
+        detachLfo(t);
         const now = t.gain.context.currentTime;
         t.gain.gain.exponentialRampToValueAtTime(0.0001, now + FADE_MS / 1000);
         const osc = t.oscillator;
@@ -89,10 +120,12 @@ const SolfeggioPlayer = () => {
       osc.connect(gain).connect(ctx.destination);
       osc.start();
 
-      tones.set(baseFreq, { oscillator: osc, gain });
+      const tone: ActiveTone = { oscillator: osc, gain, lfo: null, lfoGain: null };
+      if (pulse) attachLfo(ctx, tone);
+      tones.set(baseFreq, tone);
       setPlaying((prev) => new Set(prev).add(baseFreq));
     },
-    [getCtx, octave, waveform]
+    [getCtx, octave, waveform, pulse]
   );
 
   useEffect(() => {
@@ -110,8 +143,21 @@ const SolfeggioPlayer = () => {
     });
   }, [waveform]);
 
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    tonesRef.current.forEach((t) => {
+      if (pulse && !t.lfo) {
+        attachLfo(ctx, t);
+      } else if (!pulse && t.lfo) {
+        detachLfo(t);
+      }
+    });
+  }, [pulse]);
+
   const stopAll = useCallback(() => {
     tonesRef.current.forEach((t) => {
+      detachLfo(t);
       const now = t.gain.context.currentTime;
       t.gain.gain.exponentialRampToValueAtTime(0.0001, now + FADE_MS / 1000);
       const osc = t.oscillator;
@@ -130,6 +176,7 @@ const SolfeggioPlayer = () => {
     const tones = tonesRef.current;
     return () => {
       tones.forEach((t) => {
+        detachLfo(t);
         t.oscillator.stop();
         t.oscillator.disconnect();
         t.gain.disconnect();
@@ -179,23 +226,42 @@ const SolfeggioPlayer = () => {
           </div>
 
           <div className="mb-8">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2">
-              Waveform
-            </div>
-            <div className="flex gap-1.5">
-              {WAVEFORMS.map((w) => (
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2">
+                  Waveform
+                </div>
+                <div className="flex gap-1.5">
+                  {WAVEFORMS.map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => setWaveform(w)}
+                      className={`flex-1 py-2 rounded-xl text-sm capitalize transition-all duration-200 ${
+                        waveform === w
+                          ? "bg-white/20 text-white"
+                          : "bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50"
+                      }`}
+                    >
+                      {WAVEFORM_LABELS[w]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="w-16 flex-shrink-0">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2">
+                  Pulse
+                </div>
                 <button
-                  key={w}
-                  onClick={() => setWaveform(w)}
-                  className={`flex-1 py-2 rounded-xl text-sm capitalize transition-all duration-200 ${
-                    waveform === w
+                  onClick={() => setPulse((p) => !p)}
+                  className={`w-full py-2 rounded-xl text-sm transition-all duration-200 ${
+                    pulse
                       ? "bg-white/20 text-white"
                       : "bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50"
                   }`}
                 >
-                  {WAVEFORM_LABELS[w]}
+                  {pulse ? "On" : "Off"}
                 </button>
-              ))}
+              </div>
             </div>
           </div>
 
