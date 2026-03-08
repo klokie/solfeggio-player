@@ -184,14 +184,6 @@ const SolfeggioPlayer = () => {
     };
   }, []);
 
-  useEffect(() => {
-    try {
-      ((window as unknown as Record<string, unknown[]>).adsbygoogle ||= []).push({});
-    } catch {
-      // AdSense not loaded
-    }
-  }, []);
-
   const displayFreq = (base: number) => Math.round(base * 2 ** octave);
 
   return (
@@ -200,7 +192,7 @@ const SolfeggioPlayer = () => {
 
       <div className="relative z-10 w-full max-w-lg">
         <div className="backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-3xl p-6 sm:p-8 shadow-2xl">
-          <h1 className="text-2xl font-light text-white/90 tracking-wider text-center mb-8">
+          <h1 className="text-3xl font-light text-white/90 tracking-wider text-center mb-8 font-[family-name:var(--font-title)]">
             Solfeggio Frequencies
           </h1>
 
@@ -339,17 +331,6 @@ const SolfeggioPlayer = () => {
               </a>
             </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <ins
-            className="adsbygoogle"
-            style={{ display: "block", width: "100%", maxWidth: 468, height: 60 }}
-            data-ad-client="ca-pub-REPLACE_WITH_YOUR_PUBLISHER_ID"
-            data-ad-slot="REPLACE_WITH_YOUR_AD_SLOT"
-            data-ad-format="horizontal"
-            data-full-width-responsive="false"
-          />
         </div>
 
         <div className="mt-6 max-w-md mx-auto text-center text-white/30 text-xs leading-relaxed px-4">

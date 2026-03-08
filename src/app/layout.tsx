@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300"],
+  variable: "--font-title",
+});
 
 export const metadata: Metadata = {
   title: "Solfeggio Frequencies",
@@ -16,14 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-REPLACE_WITH_YOUR_PUBLISHER_ID"
-          crossOrigin="anonymous"
-        />
-      </head>
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} ${cormorant.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
