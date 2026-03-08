@@ -1,5 +1,7 @@
 # Solfeggio Frequency Player
 
+**[solfeggio.klokie.com](https://solfeggio.klokie.com)**
+
 A browser-based tone generator for the [Solfeggio frequencies](https://en.wikipedia.org/wiki/Solfeggio_frequencies), built with the Web Audio API.
 
 ## What are Solfeggio frequencies?
@@ -44,3 +46,4 @@ Open <http://localhost:3000> to use the player.
 | `npm run build` | Production build       |
 | `npm run start` | Serve production build |
 | `npm run lint`  | Run ESLint             |
+| `npm run deploy`| Build & deploy to Cloudflare Pages |
