@@ -19,7 +19,11 @@ jobs:
           cache: npm
 
       - run: npm ci
+
       - run: npm run build
+        env:
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
 
       - uses: cloudflare/wrangler-action@v3
         with:
