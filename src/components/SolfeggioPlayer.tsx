@@ -75,7 +75,19 @@ const SolfeggioPlayer = () => {
   const [infoSlide, setInfoSlide] = useState(0);
 
   const getCtx = useCallback(() => {
-    if (!ctxRef.current) ctxRef.current = new AudioContext();
+    if (!ctxRef.current) {
+      const Ctor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      ctxRef.current = new Ctor();
+    }
+    // Route through the "playback" audio session so tones play even when the
+    // iOS hardware silent switch is on (Safari 16.4+). No-op elsewhere.
+    const session = (
+      navigator as unknown as { audioSession?: { type: string } }
+    ).audioSession;
+    if (session) session.type = "playback";
     if (ctxRef.current.state === "suspended") ctxRef.current.resume();
     return ctxRef.current;
   }, []);
